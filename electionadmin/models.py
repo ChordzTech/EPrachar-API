@@ -21,6 +21,7 @@ class Electionadmin(models.Model):
                                   null=True)  # Field name made lowercase.
      a_image = models.FileField(upload_to='Admin_Images', db_column='a_Image', max_length=500, blank=True,
                                  null=True)  # Field name made lowercase.
+     org_name = models.CharField(max_length=200, blank=True, null=True)
 
      class Meta:
           db_table = 'electionadmin'

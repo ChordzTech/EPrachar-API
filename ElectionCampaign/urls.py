@@ -34,5 +34,6 @@ schema_view = get_schema_view(
 urlpatterns = [
           path('admin/', admin.site.urls),
           path('', include('electionadmin.urls')),
+          path('', include('Organisation.urls')),
           path('', schema_view.with_ui('swagger', cache_timeout=0), name='Swagger UI')
 ] + static(settings.MEDIA_URL_ADMIN, document_root=settings.MEDIA_ROOT_ADMIN)

@@ -214,7 +214,9 @@ class AdminLoginAPI(APIView):
 
                                    return Response({'message': 'Valid User',
                                                     'admin_type': admin_type,
-                                                    'admin_ID': admin.a_id},
+                                                    'admin_ID': admin.a_id,
+                                                    'org_name': admin.org_name,
+                                                    'admin_name': admin.a_name},
                                                    status=status.HTTP_200_OK)
                               else:
                                    return Response(
@@ -305,3 +307,47 @@ class GetImage(APIView):
                     'message': error_msg,
                }
                return Response(error_response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserByOrg(APIView):
+     def get(self, request, org_name):
+          try:
+               org_name = self.kwargs.get('org_name', None)
+               if org_name is None:
+                    return Response({
+                         'status': 'error',
+                         'code': status.HTTP_400_BAD_REQUEST,
+                         'message': 'Organisation name is required'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+               admin = Electionadmin.objects.filter(org_name=org_name)
+
+               if not admin.exists():
+                    return Response({
+                         'status': 'error',
+                         'code': status.HTTP_404_NOT_FOUND,
+                         'message': f'Users not found for {org_name}'
+                    }, status=status.HTTP_404_NOT_FOUND)
+
+               serializer = ElectionAdminSerializer(admin, many=True)
+               data = serializer.data
+
+               # ✅ Add complete URL to a_image field for each record
+               for item in data:
+                    if item.get("a_image"):
+                         item["a_image"] = request.build_absolute_uri(item["a_image"])
+
+               api_response = {
+                    'status': 'success',
+                    'code': status.HTTP_200_OK,
+                    'message': f'Users for {org_name}',
+                    'data': data
+               }
+               return Response(api_response, status=status.HTTP_200_OK)
+
+          except Exception as e:
+               return Response({
+                    'status': 'error',
+                    'code': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    'message': 'Internal Server Error',
+                    'error': str(e)
+               }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
